@@ -1,0 +1,81 @@
+#!/bin/bash
+
+usage() 
+{
+echo "
+Usage: logviewer [OPTIONS] log
+
+Options:
+    -f: Follow the log
+    -l: Number of lines to tail log (default 10)
+    -h: This help message
+    -v: Verbose
+
+Programmed Logs:
+
+    all, ao, archftw, auth, crond, dmn, dmesg, err,
+    faillog, kdm, kern, last, msg, pac, slim, sys,
+    user, uucp, wtmp, and xorg
+
+Example(s):
+    logviewer err - views the error log
+    logviewer -fvl 5 kern - displays last 5 lines of the
+    kernel.log and continues to follow it as text is
+    added to the log with verbose switched on"
+}
+
+[ $# -eq 0 ] && echo "logviewer: no arguments specified" && usage && exit $?
+logdir="/var/log/ /home/$USER/.weechat/logs/"
+follow=0
+lines=10
+mylog=''
+verbose=0
+
+while getopts "fhvl:" options ; do
+    case $options in
+        f) follow=1;  ;;
+        l) lines=$OPTARG; ;;
+        v) verbose=1; ;;
+        h) usage; exit $?; ;;
+    esac
+done
+shift $(($OPTIND - 1)) 
+
+case $1 in
+    all)     mylog='everything.log'                                         ;;
+    ao)      mylog='irc.freenode.#archlinux-offtopic.weechatlog'            ;;
+    archftw) mylog='irc.freenode.##arch-ftw.weechatlog'                     ;;
+    auth)    mylog='auth.log'                                               ;;
+    crond)   mylog='crond.log'                                              ;;
+    dmn)     mylog='daemon.log'                                             ;;
+    dmesg)   mylog='dmesg.log'                                              ;;
+    err)     mylog='errors.log'                                             ;;
+    faillog) mylog='faillog'                                                ;;
+    kdm)     mylog='kdm.log'                                                ;;
+    kern)    mylog='kernel.log'                                             ;;
+    last)    mylog='lastlog'                                                ;;
+    msg)     mylog='messages.log'                                           ;;
+    pac)     mylog='pacman.log'                                             ;;
+    slim)    mylog='slim.log'                                               ;;
+    sys)     mylog='syslog.log'                                             ;;
+    user)    mylog='user.log'                                               ;;
+    uucp)    mylog='uucp.log'                                               ;;
+    wtmp)    mylog='wtmp'                                                   ;;
+    xorg)    mylog='Xorg.0.log'                                             ;;
+    *)       echo "logviewer: the log you specified isnt available"; exit 1 ;;
+esac
+
+tries=0
+
+for i in $logdir ; do
+if [ -f $i$mylog ] && [ $follow == 0 ]; then
+    [ $verbose -eq 1 ] && echo "logviewer: now showing the last $lines line(s) of $logdir$mylog"
+    tail -n $lines $i$mylog
+elif [ -f $i$mylog ] && [ $follow == 1 ]; then
+    [ $verbose -eq 1 ] && echo "logviewer: now displaying the last $lines line(s) of $i$mylog in follow mode"
+    tail -fn $lines $i$mylog
+elif [ ! -f $i$mylog ]; then
+    [ $tries -eq 1 ] && echo "logviewer: the log you have requested does not currently exist."
+fi
+tries=$(($tries + 1))
+done

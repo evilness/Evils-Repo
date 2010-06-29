@@ -1,0 +1,41 @@
+#!/usr/bin/python
+
+import os, sys
+from optparse import OptionParser
+
+#global ren_filetype, ren_prefix, ren_startcount, ren_directory, ren_filecount, ren_list
+
+parser = OptionParser()
+parser.add_option("-f", "--filetype", metavar="filetype",default=".jpg", help="Choose file type to rename", type="string", dest="ren_filetype")
+parser.add_option("-p", "--prefix", metavar="prefix", default="Pictures", help="Choose a filename prefix", type="string", dest="ren_prefix")
+parser.add_option("-s", "--startcount", metavar="startcount", default=1, help="Choose what number to start counting from", type="int", dest="ren_startcount")
+parser.add_option("-d", "--directory", metavar="directory", default=".", help="Define a different directory besides the working directory", type="string", dest="ren_directory")
+
+(options, args) = parser.parse_args()
+
+ren_filetype = options.ren_filetype
+ren_prefix = options.ren_prefix
+ren_startcount = options.ren_startcount
+ren_directory = options.ren_directory
+
+ren_list=[]
+ren_filecount=0
+
+os.chdir(ren_directory)
+
+for a in os.listdir('.'):
+    if a.endswith(ren_filetype) == True:
+        ren_filecount=ren_filecount+1
+	ren_list.append(a)
+
+
+#ren_filecount=len(str(ren_filecount + ren_startcount))
+#ren_filecount='%(#)0' + str(ren_filecount) + 'd'
+
+ren_filecount='%(#)0' + str(len(str(ren_filecount + ren_startcount))) + 'd'
+
+for b in ren_list:
+	os.rename(b, ren_prefix + '-' + (ren_filecount % {"#" : ren_startcount}) + ren_filetype)
+	ren_startcount=ren_startcount+1
+	
+	
